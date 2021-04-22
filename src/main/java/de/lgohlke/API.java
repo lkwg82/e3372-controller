@@ -17,17 +17,18 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
-import org.xml.sax.SAXException;
+import lombok.var;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpConnectTimeoutException;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -112,7 +113,8 @@ public class API {
                 private final Date date = new Date();
 
                 Send(String phone, String content) {
-                    phones = java.util.List.of(phone);
+                    phones = new ArrayList<>();
+                    phones.add(phone);
                     this.content = content;
                     length = content.length();
                 }
@@ -249,7 +251,7 @@ public class API {
 
     void demo() {
         var redirectTo = System.getenv("REDIRECT_PHONE_NUMBER");
-        Objects.requireNonNull(redirectTo, "missing number to redirect");
+        Objects.requireNonNull(redirectTo, "missing number to redirect: REDIRECT_PHONE_NUMBER");
         try {
             SMS.Actions.list().forEach(message -> {
                 System.out.println(message);
@@ -264,20 +266,20 @@ public class API {
                 }
             });
         } catch (Exception e) {
-            if (e instanceof HttpConnectTimeoutException) {
-                System.err.println("http: " + e.getMessage());
-            } else {
-                throw e;
-            }
+//            if (e instanceof HttpConnectTimeoutException) {
+//                System.err.println("http: " + e.getMessage());
+//            } else {
+            throw e;
+//            }
         }
     }
 
     private void handleSMS(String redirectTo, SMS.Response.List.Message message) {
         if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED || message
-                                                                                                .getType() == SMS.Response.List.Message.TYPE.INCOMING) {
+                .getType() == SMS.Response.List.Message.TYPE.INCOMING) {
             var content = "received from " + message.getPhone() + "\n" +
 //                        "at " + message.getDate() + "\n" +
-                          message.getContent();
+                    message.getContent();
             SMS.Actions.send(redirectTo, content);
             if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED) {
                 if (message.getContent().contains("noch kein Upgrade buchen")) {
@@ -297,35 +299,33 @@ public class API {
     }
 
 
-    private static String post(String path, String payload) throws URISyntaxException, IOException, InterruptedException, ParserConfigurationException, SAXException {
+    private static String post(String path, String payload) throws URISyntaxException, IOException {
         HttpClient client = createClient();
         var uri = new URI(DEFAULT_BASE_PATH + path);
 
         var sessionToken = fetchSessionToken();
-        var request = HttpRequest.newBuilder()
-                .uri(uri)
-                .POST(HttpRequest.BodyPublishers.ofString(payload))
-                .header("__RequestVerificationToken", sessionToken.getTokenInfo())
-                .header("Cookie", "SessionId=" + sessionToken.getSessionInfo())
-                .header("Content-Type", "text/xml")
-                .build();
-        var responseBodyHandler = HttpResponse.BodyHandlers.ofString();
-        var response = client.send(request, responseBodyHandler);
-        return response.body();
+        var request = new HttpPost(uri);
+
+        request.setHeader("__RequestVerificationToken", sessionToken.getTokenInfo());
+        request.setHeader("Cookie", "SessionId=" + sessionToken.getSessionInfo());
+        request.setHeader("Content-Type", "text/xml");
+        request.setEntity(new StringEntity(payload));
+
+        var response = client.execute(request);
+
+        return EntityUtils.toString(response.getEntity());
     }
 
     private static HttpClient createClient() {
-        return HttpClient.newBuilder()
-                .connectTimeout(Duration.ofMillis(200))
-                .build();
+        return HttpClients.createMinimal();
     }
 
     private static String get(String path) throws URISyntaxException, IOException, InterruptedException {
         HttpClient client = createClient();
         var uri = new URI(DEFAULT_BASE_PATH + path);
-        var request = HttpRequest.newBuilder().uri(uri).GET().build();
-        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return response.body();
+        var request = new HttpGet(uri);
+        var response = client.execute(request);
+        return EntityUtils.toString(response.getEntity());
     }
 
 

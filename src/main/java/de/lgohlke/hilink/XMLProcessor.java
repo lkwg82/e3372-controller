@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import de.lgohlke.API;
+import lombok.var;
 
 public class XMLProcessor {
     public <T> T readXml(String response, Class<T> clazz) throws JsonProcessingException, APIErrorException {

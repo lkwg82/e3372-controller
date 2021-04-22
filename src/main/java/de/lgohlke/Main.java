@@ -1,5 +1,7 @@
 package de.lgohlke;
 
+import lombok.var;
+
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 

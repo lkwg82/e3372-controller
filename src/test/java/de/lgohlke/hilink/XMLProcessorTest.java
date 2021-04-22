@@ -3,6 +3,7 @@ package de.lgohlke.hilink;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.var;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.Test;
 
@@ -27,9 +28,9 @@ public class XMLProcessorTest {
         var xml = processor.writeXml(test);
 
         var expected = "<TestObject>\n" +
-                       "  <name>test</name>\n" +
-                       "  <age>1</age>\n" +
-                       "</TestObject>\n";
+                "  <name>test</name>\n" +
+                "  <age>1</age>\n" +
+                "</TestObject>\n";
         assertThat(xml).isEqualTo(expected);
     }
 
@@ -43,9 +44,9 @@ public class XMLProcessorTest {
     @Test
     void should_read_xml() throws JsonProcessingException, APIErrorException {
         var xml = "<TestObject>\n" +
-                  "  <name>test</name>\n" +
-                  "  <age>1</age>\n" +
-                  "</TestObject>\n";
+                "  <name>test</name>\n" +
+                "  <age>1</age>\n" +
+                "</TestObject>\n";
         var actual = processor.readXml(xml, TestObject.class);
 
         assertThat(actual).isEqualTo(test);
@@ -54,10 +55,10 @@ public class XMLProcessorTest {
     @Test
     void should_fail_read_xml() {
         var xml = "<TestObject>\n" +
-                  "  <name>test</name>\n" +
-                  "  <age>1</age>\n" +
-                  "  <agex>1</agex>\n" +
-                  "</TestObject>\n";
+                "  <name>test</name>\n" +
+                "  <age>1</age>\n" +
+                "  <agex>1</agex>\n" +
+                "</TestObject>\n";
         ThrowableAssert.ThrowingCallable callable = () -> processor.readXml(xml, TestObject.class);
         assertThatThrownBy(callable).isInstanceOf(JsonProcessingException.class);
     }
@@ -65,9 +66,9 @@ public class XMLProcessorTest {
     @Test
     void should_map_to_error() {
         var xml = "<error>\n" +
-                  "  <code>1</code>\n" +
-                  "  <message/>\n" +
-                  "</error>\n";
+                "  <code>1</code>\n" +
+                "  <message/>\n" +
+                "</error>\n";
         ThrowableAssert.ThrowingCallable callable = () -> processor.readXml(xml, TestObject.class);
         assertThatThrownBy(callable).isInstanceOf(APIErrorException.class);
     }
