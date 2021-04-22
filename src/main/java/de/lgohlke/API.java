@@ -4,15 +4,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+import de.lgohlke.hilink.XMLProcessor;
 import de.lgohlke.hilink.response.SessionToken;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -302,17 +299,7 @@ public class API {
     }
 
     private static <T> T readXml(String response, Class<T> clazz) throws JsonProcessingException {
-        var mapper = new XmlMapper();
-
-        // see https://github.com/FasterXML/jackson-dataformat-xml/issues/124
-        mapper.configOverride(java.util.List.class)
-                .setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
-        try {
-            return mapper.readValue(response, clazz);
-        } catch (JsonProcessingException e) {
-            System.err.println(response);
-            throw e;
-        }
+        return new XMLProcessor().readXml(response, clazz);
     }
 
     private static String writeXml(Object o) throws JsonProcessingException {
@@ -320,10 +307,6 @@ public class API {
     }
 
     private static String writeXml(Object o, boolean indent) throws JsonProcessingException {
-        var mapper = new XmlMapper();
-        if (indent) {
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        }
-        return mapper.writeValueAsString(o);
+        return new XMLProcessor().writeXml(o, indent);
     }
 }
