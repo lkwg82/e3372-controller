@@ -38,12 +38,16 @@ public class API {
 
     @JsonTypeName("response")
     @Data
-    @RequiredArgsConstructor
     public static class SessionToken {
-        @JsonProperty("SesInfo")
         private final String sessionInfo;
-        @JsonProperty("TokInfo")
         private final String tokenInfo;
+
+        @JsonCreator
+        public SessionToken(@JsonProperty("SesInfo") String sessionInfo,
+                            @JsonProperty("TokInfo") String tokenInfo) {
+            this.sessionInfo = sessionInfo;
+            this.tokenInfo = tokenInfo;
+        }
     }
 
     @Getter

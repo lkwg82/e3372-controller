@@ -34,6 +34,13 @@ public class MappingTest {
         new XMLProcessor().readXml(xml, Response.class);
     }
 
+    @Test
+    void map_session_token() throws APIErrorException, JsonProcessingException {
+        var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response><SesInfo>947p2llduTUXKWm2f7sW3OHIRQ2r08QcDL2BQt1OP8qGuk5T5vwQZDizWkAJ0ki6mv2ioVxsKXwhla73ehgd9OFk2gehdP9hcY6EVlI8DFCAk0PoIyjxL4GRBh6h2rQm</SesInfo><TokInfo>T8lgAWOEnf0QBe4eVjRyi1wp9z2FQgl8</TokInfo></response>";
+
+        new XMLProcessor().readXml(xml, API.SessionToken.class);
+    }
+
     static class Response {
         @JacksonXmlElementWrapper(localName = "Messages")
         @JacksonXmlProperty(localName = "Message")
