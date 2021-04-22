@@ -7,7 +7,7 @@ public class Main {
     public static void main(String... args) throws Exception {
         var api = new API();
         while (true) {
-            System.out.println("checking " + new Date() + " ...");
+            System.out.println(new Date() + " checking  ...");
             api.demo();
             TimeUnit.SECONDS.sleep(2);
         }
