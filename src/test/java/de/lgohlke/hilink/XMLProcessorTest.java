@@ -3,7 +3,6 @@ package de.lgohlke.hilink;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.var;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.Test;
 

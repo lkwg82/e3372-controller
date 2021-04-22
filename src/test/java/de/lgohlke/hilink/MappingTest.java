@@ -4,25 +4,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import de.lgohlke.API;
-import lombok.val;
-import lombok.var;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class MappingTest {
     @Test
     void map_error() throws JsonProcessingException, APIErrorException {
         // language=XML
-        val response = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        var response = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<error>\n" +
                 "    <code>125003</code>\n" +
                 "    <message/>\n" +
                 "</error>\n";
 
-        val o = new XMLProcessor().readXml(response, API.Error.class);
+        var o = new XMLProcessor().readXml(response, API.Error.class);
 
         assertThat(o.getCode()).isEqualTo(125003);
         assertThat(o.getMessage()).isEmpty();
