@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
@@ -242,40 +243,51 @@ public class API {
     void demo() {
         var redirectTo = System.getenv("REDIRECT_PHONE_NUMBER");
         Objects.requireNonNull(redirectTo, "missing number to redirect");
+        try {
+            SMS.Actions.list().forEach(message -> {
+                System.out.println(message);
 
-        SMS.Actions.list().forEach(message -> {
-            System.out.println(message);
+                handleSMS(redirectTo, message);
 
-            switch (message.getType()) {
-                case DATA_VOLUME_EXCEEDED, INCOMING:
-                    var content = "received from " + message.getPhone() + "\n" +
-//                        "at " + message.getDate() + "\n" +
-                            message.getContent();
-                    SMS.Actions.send(redirectTo, content);
-                    if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED) {
-                        if (message.getContent().contains("noch kein Upgrade buchen")) {
-                            System.out.println("no upgrade yet");
-                        } else {
-                            SMS.Actions.send(message.getPhone(), "2");
-                            SMS.Actions.send(redirectTo, "extends data volume");
-                        }
-                    }
-                    break;
-                default:
-                    try {
-                        System.out.println("skip: " + writeXml(message));
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
-            }
-
-            var status = SMS.Actions.delete(message);
-            if (status.isOk()) {
-                System.out.println("removed " + message.getIndex());
+                var status = SMS.Actions.delete(message);
+                if (status.isOk()) {
+                    System.out.println("removed " + message.getIndex());
+                } else {
+                    System.err.println(status.getStatus());
+                }
+            });
+        } catch (Exception e) {
+            if (e instanceof HttpConnectTimeoutException) {
+                System.err.println("http: " + e.getMessage());
             } else {
-                System.err.println(status.getStatus());
+                throw e;
             }
-        });
+        }
+    }
+
+    private void handleSMS(String redirectTo, SMS.Response.List.Message message) {
+        switch (message.getType()) {
+            case DATA_VOLUME_EXCEEDED, INCOMING:
+                var content = "received from " + message.getPhone() + "\n" +
+//                        "at " + message.getDate() + "\n" +
+                        message.getContent();
+                SMS.Actions.send(redirectTo, content);
+                if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED) {
+                    if (message.getContent().contains("noch kein Upgrade buchen")) {
+                        System.out.println("no upgrade yet");
+                    } else {
+                        SMS.Actions.send(message.getPhone(), "2");
+                        SMS.Actions.send(redirectTo, "extends data volume");
+                    }
+                }
+                break;
+            default:
+                try {
+                    System.out.println("skip: " + writeXml(message));
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+        }
     }
 
 
@@ -291,11 +303,15 @@ public class API {
                 .header("Cookie", "SessionId=" + sessionToken.sessionInfo())
                 .header("Content-Type", "text/xml")
                 .build();
-        return client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+        var responseBodyHandler = HttpResponse.BodyHandlers.ofString();
+        var response = client.send(request, responseBodyHandler);
+        return response.body();
     }
 
     private static HttpClient createClient() {
-        return HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
+        return HttpClient.newBuilder()
+                .connectTimeout(Duration.ofMillis(200))
+                .build();
     }
 
     private static String get(String path) throws URISyntaxException, IOException, InterruptedException {
