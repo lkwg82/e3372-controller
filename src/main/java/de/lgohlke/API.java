@@ -12,6 +12,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import de.lgohlke.hilink.APIErrorException;
 import de.lgohlke.hilink.XMLProcessor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -36,20 +37,26 @@ public class API {
     private static final String DEFAULT_BASE_PATH = "http://192.168.8.1";
 
     @JsonTypeName("response")
-    public static record SessionToken(
-            @JsonProperty("SesInfo")
-            String sessionInfo,
-            @JsonProperty("TokInfo")
-            String tokenInfo) {
+    @Data
+    @RequiredArgsConstructor
+    public static class SessionToken {
+        @JsonProperty("SesInfo")
+        private final String sessionInfo;
+        @JsonProperty("TokInfo")
+        private final String tokenInfo;
     }
 
-    public static record Error(int code, String message) {
+    @Getter
+    @RequiredArgsConstructor
+    public static final class Error {
+        private final int code;
+        private final String message;
     }
 
-    class SMS {
+    static class SMS {
         private final static String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-        class Request {
+        static class Request {
 
             @JacksonXmlRootElement(localName = "request")
             private static class Base {
@@ -112,7 +119,7 @@ public class API {
             }
         }
 
-        class Response {
+        static class Response {
             @JacksonXmlRootElement(localName = "response")
             private static class Base {
             }
@@ -266,27 +273,26 @@ public class API {
     }
 
     private void handleSMS(String redirectTo, SMS.Response.List.Message message) {
-        switch (message.getType()) {
-            case DATA_VOLUME_EXCEEDED, INCOMING:
-                var content = "received from " + message.getPhone() + "\n" +
+        if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED || message
+                                                                                                .getType() == SMS.Response.List.Message.TYPE.INCOMING) {
+            var content = "received from " + message.getPhone() + "\n" +
 //                        "at " + message.getDate() + "\n" +
-                        message.getContent();
-                SMS.Actions.send(redirectTo, content);
-                if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED) {
-                    if (message.getContent().contains("noch kein Upgrade buchen")) {
-                        System.out.println("no upgrade yet");
-                    } else {
-                        SMS.Actions.send(message.getPhone(), "2");
-                        SMS.Actions.send(redirectTo, "extends data volume");
-                    }
+                          message.getContent();
+            SMS.Actions.send(redirectTo, content);
+            if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED) {
+                if (message.getContent().contains("noch kein Upgrade buchen")) {
+                    System.out.println("no upgrade yet");
+                } else {
+                    SMS.Actions.send(message.getPhone(), "2");
+                    SMS.Actions.send(redirectTo, "extends data volume");
                 }
-                break;
-            default:
-                try {
-                    System.out.println("skip: " + writeXml(message));
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
+            }
+        } else {
+            try {
+                System.out.println("skip: " + writeXml(message));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -299,8 +305,8 @@ public class API {
         var request = HttpRequest.newBuilder()
                 .uri(uri)
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
-                .header("__RequestVerificationToken", sessionToken.tokenInfo())
-                .header("Cookie", "SessionId=" + sessionToken.sessionInfo())
+                .header("__RequestVerificationToken", sessionToken.getTokenInfo())
+                .header("Cookie", "SessionId=" + sessionToken.getSessionInfo())
                 .header("Content-Type", "text/xml")
                 .build();
         var responseBodyHandler = HttpResponse.BodyHandlers.ofString();

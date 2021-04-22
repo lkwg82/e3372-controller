@@ -14,27 +14,23 @@ public class MappingTest {
     @Test
     void map_error() throws JsonProcessingException, APIErrorException {
         // language=XML
-        var response = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <error>
-                    <code>125003</code>
-                    <message/>
-                </error>
-                """;
+        var response = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                       "<error>\n" +
+                       "    <code>125003</code>\n" +
+                       "    <message/>\n" +
+                       "</error>\n";
 
         var o = new XMLProcessor().readXml(response, API.Error.class);
 
-        assertThat(o.code()).isEqualTo(125003);
-        assertThat(o.message()).isEmpty();
+        assertThat(o.getCode()).isEqualTo(125003);
+        assertThat(o.getMessage()).isEmpty();
     }
 
     @Test
     void should_map_empty_list() throws JsonProcessingException, APIErrorException {
-        var xml = """
-                <response>
-                    <Messages/>
-                </response>
-                """;
+        var xml = "<response>\n" +
+                  "    <Messages/>\n" +
+                  "</response>\n";
         new XMLProcessor().readXml(xml, Response.class);
     }
 

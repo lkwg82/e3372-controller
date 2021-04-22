@@ -1,6 +1,8 @@
 package de.lgohlke.hilink;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.Test;
 
@@ -24,12 +26,10 @@ public class XMLProcessorTest {
     void should_write_xml_with_indentation() throws JsonProcessingException {
         var xml = processor.writeXml(test);
 
-        var expected = """
-                <TestObject>
-                  <name>test</name>
-                  <age>1</age>
-                </TestObject>
-                """;
+        var expected = "<TestObject>\n" +
+                       "  <name>test</name>\n" +
+                       "  <age>1</age>\n" +
+                       "</TestObject>\n";
         assertThat(xml).isEqualTo(expected);
     }
 
@@ -42,12 +42,10 @@ public class XMLProcessorTest {
 
     @Test
     void should_read_xml() throws JsonProcessingException, APIErrorException {
-        var xml = """
-                <TestObject>
-                  <name>test</name>
-                  <age>1</age>
-                </TestObject>
-                """;
+        var xml = "<TestObject>\n" +
+                  "  <name>test</name>\n" +
+                  "  <age>1</age>\n" +
+                  "</TestObject>\n";
         var actual = processor.readXml(xml, TestObject.class);
 
         assertThat(actual).isEqualTo(test);
@@ -55,30 +53,29 @@ public class XMLProcessorTest {
 
     @Test
     void should_fail_read_xml() {
-        var xml = """
-                <TestObject>
-                  <name>test</name>
-                  <age>1</age>
-                  <agex>1</agex>
-                </TestObject>
-                """;
+        var xml = "<TestObject>\n" +
+                  "  <name>test</name>\n" +
+                  "  <age>1</age>\n" +
+                  "  <agex>1</agex>\n" +
+                  "</TestObject>\n";
         ThrowableAssert.ThrowingCallable callable = () -> processor.readXml(xml, TestObject.class);
         assertThatThrownBy(callable).isInstanceOf(JsonProcessingException.class);
     }
 
     @Test
     void should_map_to_error() {
-        var xml = """
-                <error>
-                  <code>1</code>
-                  <message/>
-                </error>
-                """;
+        var xml = "<error>\n" +
+                  "  <code>1</code>\n" +
+                  "  <message/>\n" +
+                  "</error>\n";
         ThrowableAssert.ThrowingCallable callable = () -> processor.readXml(xml, TestObject.class);
         assertThatThrownBy(callable).isInstanceOf(APIErrorException.class);
     }
 
-    record TestObject(String name, int age) {
-
+    @RequiredArgsConstructor
+    @Getter
+    static final class TestObject {
+        private final String name;
+        private final int age;
     }
 }
