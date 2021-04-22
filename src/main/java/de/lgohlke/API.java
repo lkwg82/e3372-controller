@@ -32,6 +32,9 @@ import java.util.concurrent.TimeUnit;
 public class API {
     private static final String DEFAULT_BASE_PATH = "http://192.168.8.1";
 
+    public static record Error(int code, String message) {
+    }
+
     class SMS {
         private final static String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
