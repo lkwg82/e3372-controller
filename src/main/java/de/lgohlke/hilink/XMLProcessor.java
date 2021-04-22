@@ -3,16 +3,23 @@ package de.lgohlke.hilink;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import de.lgohlke.API;
 
 public class XMLProcessor {
-    public <T> T readXml(String response, Class<T> clazz) throws JsonProcessingException {
+    public <T> T readXml(String response, Class<T> clazz) throws JsonProcessingException, APIErrorException {
         var mapper = new XmlMapper();
 
         try {
             return mapper.readValue(response, clazz);
         } catch (JsonProcessingException e) {
             System.err.println(response);
-            throw e;
+            try {
+                var error = mapper.readValue(response, API.Error.class);
+                throw new APIErrorException(error);
+            } catch (JsonProcessingException e2) {
+                System.err.println(response);
+                throw e2;
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 package de.lgohlke.hilink;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,7 +41,7 @@ public class XMLProcessorTest {
     }
 
     @Test
-    void should_read_xml() throws JsonProcessingException {
+    void should_read_xml() throws JsonProcessingException, APIErrorException {
         var xml = """
                 <TestObject>
                   <name>test</name>
@@ -61,7 +62,20 @@ public class XMLProcessorTest {
                   <agex>1</agex>
                 </TestObject>
                 """;
-        assertThatThrownBy(() -> processor.readXml(xml, TestObject.class)).isInstanceOf(JsonProcessingException.class);
+        ThrowableAssert.ThrowingCallable callable = () -> processor.readXml(xml, TestObject.class);
+        assertThatThrownBy(callable).isInstanceOf(JsonProcessingException.class);
+    }
+
+    @Test
+    void should_map_to_error() {
+        var xml = """
+                <error>
+                  <code>1</code>
+                  <message/>
+                </error>
+                """;
+        ThrowableAssert.ThrowingCallable callable = () -> processor.readXml(xml, TestObject.class);
+        assertThatThrownBy(callable).isInstanceOf(APIErrorException.class);
     }
 
     record TestObject(String name, int age) {

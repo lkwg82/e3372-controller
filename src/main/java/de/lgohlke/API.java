@@ -9,6 +9,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+import de.lgohlke.hilink.APIErrorException;
 import de.lgohlke.hilink.XMLProcessor;
 import de.lgohlke.hilink.response.SessionToken;
 import lombok.Getter;
@@ -301,7 +302,7 @@ public class API {
         return readXml(response, SessionToken.class);
     }
 
-    private static <T> T readXml(String response, Class<T> clazz) throws JsonProcessingException {
+    private static <T> T readXml(String response, Class<T> clazz) throws JsonProcessingException, APIErrorException {
         return new XMLProcessor().readXml(response, clazz);
     }
 

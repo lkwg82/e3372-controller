@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MappingTest {
     @Test
-    void map_error() throws JsonProcessingException {
+    void map_error() throws JsonProcessingException, APIErrorException {
         // language=XML
         var response = """
                 <?xml version="1.0" encoding="UTF-8"?>
@@ -29,7 +29,7 @@ public class MappingTest {
     }
 
     @Test
-    void should_map_empty_list() throws JsonProcessingException {
+    void should_map_empty_list() throws JsonProcessingException, APIErrorException {
         var xml = """
                 <response>
                     <Messages/>
@@ -42,6 +42,5 @@ public class MappingTest {
         @JacksonXmlElementWrapper(localName = "Messages")
         @JacksonXmlProperty(localName = "Message")
         List<String> messages;
-
     }
 }
