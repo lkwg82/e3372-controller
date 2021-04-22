@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -11,7 +12,6 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import de.lgohlke.hilink.APIErrorException;
 import de.lgohlke.hilink.XMLProcessor;
-import de.lgohlke.hilink.response.SessionToken;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -28,10 +28,19 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class API {
     private static final String DEFAULT_BASE_PATH = "http://192.168.8.1";
+
+    @JsonTypeName("response")
+    public static record SessionToken(
+            @JsonProperty("SesInfo")
+            String sessionInfo,
+            @JsonProperty("TokInfo")
+            String tokenInfo) {
+    }
 
     public static record Error(int code, String message) {
     }
@@ -230,8 +239,10 @@ public class API {
         }
     }
 
-    void demo() throws Exception {
+    void demo() {
         var redirectTo = System.getenv("REDIRECT_PHONE_NUMBER");
+        Objects.requireNonNull(redirectTo, "missing number to redirect");
+
         SMS.Actions.list().forEach(message -> {
             System.out.println(message);
 
