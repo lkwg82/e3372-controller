@@ -21,6 +21,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -253,7 +254,7 @@ public class API {
 
     void demo() {
         var redirectTo = System.getenv("REDIRECT_PHONE_NUMBER");
-        Objects.requireNonNull(redirectTo, "missing number to redirect");
+        Objects.requireNonNull(redirectTo, "missing number to redirect: REDIRECT_PHONE_NUMBER");
         try {
             SMS.Actions.list().forEach(message -> {
                 System.out.println(message);
@@ -268,7 +269,7 @@ public class API {
                 }
             });
         } catch (Exception e) {
-            if (e instanceof HttpConnectTimeoutException) {
+            if (e instanceof HttpConnectTimeoutException || e instanceof ConnectException) {
                 System.err.println("http: " + e.getMessage());
             } else {
                 throw e;
