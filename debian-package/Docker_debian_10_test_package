@@ -1,0 +1,13 @@
+FROM debian:10
+
+RUN apt-get update
+
+# temporary for faster runs
+RUN apt-get install -y --no-install-recommends default-jre-headless
+RUN apt-get install -y --no-install-recommends systemd
+
+COPY e3372-controller_0.1/DEBIAN/control /tmp
+
+RUN packages=$(grep ^Depends: /tmp/control | cut -d: -f2 | sed -e 's#([^)]*)##g; s#,##g') \
+    && echo $packages \
+    && apt-get install -y --no-install-recommends $packages

@@ -1,0 +1,9 @@
+Package: e3372-controller
+Version: 0.1
+Section: base
+Priority: optional
+Architecture: all
+Depends: default-jre-headless (>= 11), systemd (>= 241)
+Maintainer: Lars K.W. Gohlke <lkwg82+e3372-controller@gmail.com>
+Description: e3372-controller
+

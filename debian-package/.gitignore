@@ -1,0 +1,5 @@
+.idea/
+/tmp_empty_context_dir/
+*deb
+*jar
+.vagrant

@@ -1,0 +1,13 @@
+[Unit]
+Description=e3372-controller
+After=network.target
+
+[Service]
+WorkingDirectory=/tmp
+EnvironmentFile=/etc/e3372-controler.env
+ExecStart=/usr/bin/java -jar /opt/e3372-controller/e3372-controller-jar-with-dependencies.jar
+#Restart=always
+User=nobody
+
+[Install]
+WantedBy=multi-user.target

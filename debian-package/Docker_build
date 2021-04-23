@@ -1,0 +1,12 @@
+FROM debian:10
+
+RUN apt-get update
+RUN apt-get install -y curl
+
+
+ADD e3372-controller_0.1 /src
+ADD e3372-controller-jar-with-dependencies.jar /tmp
+
+WORKDIR /src
+RUN mkdir -p opt/e3372-controller
+RUN cp -v /tmp/e3372-controller*jar opt/e3372-controller
