@@ -269,7 +269,7 @@ public class API {
                 }
             });
         } catch (Exception e) {
-            if (e instanceof HttpConnectTimeoutException || e instanceof ConnectException) {
+            if (e instanceof HttpConnectTimeoutException || e instanceof ConnectException || e instanceof IOException) {
                 System.err.println("http: " + e.getMessage());
             } else {
                 throw e;
