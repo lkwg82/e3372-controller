@@ -6,8 +6,10 @@ After=network.target
 WorkingDirectory=/tmp
 EnvironmentFile=/etc/e3372-controler.env
 ExecStart=/usr/bin/java -jar /opt/e3372-controller/e3372-controller-jar-with-dependencies.jar
-#Restart=always
+Restart=always
 User=nobody
+MemoryHigh=150M
+MemoryMax=250M
 
 [Install]
 WantedBy=multi-user.target
