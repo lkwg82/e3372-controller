@@ -11,6 +11,9 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MappingTest {
+
+    private XMLProcessor xmlProcessor = new XMLProcessor();
+
     @Test
     void map_error() throws JsonProcessingException, APIErrorException {
         // language=XML
@@ -20,7 +23,7 @@ public class MappingTest {
                 "    <message/>\n" +
                 "</error>\n";
 
-        var o = new XMLProcessor().readXml(response, API.Error.class);
+        var o = xmlProcessor.readXml(response, API.Error.class);
 
         assertThat(o.getCode()).isEqualTo(125003);
         assertThat(o.getMessage()).isEmpty();
@@ -31,14 +34,118 @@ public class MappingTest {
         var xml = "<response>\n" +
                 "    <Messages/>\n" +
                 "</response>\n";
-        new XMLProcessor().readXml(xml, Response.class);
+        xmlProcessor.readXml(xml, Response.class);
     }
 
     @Test
     void map_session_token() throws APIErrorException, JsonProcessingException {
         var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response><SesInfo>947p2llduTUXKWm2f7sW3OHIRQ2r08QcDL2BQt1OP8qGuk5T5vwQZDizWkAJ0ki6mv2ioVxsKXwhla73ehgd9OFk2gehdP9hcY6EVlI8DFCAk0PoIyjxL4GRBh6h2rQm</SesInfo><TokInfo>T8lgAWOEnf0QBe4eVjRyi1wp9z2FQgl8</TokInfo></response>";
 
-        new XMLProcessor().readXml(xml, API.SessionToken.class);
+        xmlProcessor.readXml(xml, API.SessionToken.class);
+    }
+
+    @Test
+    void should_map_messages() throws APIErrorException, JsonProcessingException {
+        var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<response>\n" +
+                "<Count>8</Count>\n" +
+                "<Messages>\n" +
+                "                <Message>\n" +
+                "                        <Smstat>0</Smstat>\n" +
+                "                        <Index>40028</Index>\n" +
+                "                        <Phone>01734982893</Phone>\n" +
+                "                        <Content>Vodafone Mailbox: Der Anrufer hat keine Nachricht hinterlassen:\n" +
+                "+491734982893\n" +
+                " 23.04.2021 14:17:34\n" +
+                " 1 Versuch\n" +
+                "</Content>\n" +
+                "                        <Date>2021-04-23 14:17:33</Date>\n" +
+                "                        <Sca></Sca>\n" +
+                "                        <SaveType>0</SaveType>\n" +
+                "                        <Priority>0</Priority>\n" +
+                "                        <SmsType>1</SmsType>\n" +
+                "                </Message>\n" +
+                "                <Message>\n" +
+                "                        <Smstat>0</Smstat>\n" +
+                "                        <Index>40031</Index>\n" +
+                "                        <Phone>+491734982893</Phone>\n" +
+                "                        <Content>fhf</Content>\n" +
+                "                        <Date>2021-04-23 14:24:04</Date>\n" +
+                "                        <Sca></Sca>\n" +
+                "                        <SaveType>0</SaveType>\n" +
+                "                        <Priority>0</Priority>\n" +
+                "                        <SmsType>1</SmsType>\n" +
+                "                </Message>\n" +
+                "                <Message>\n" +
+                "                        <Smstat>0</Smstat>\n" +
+                "                        <Index>40030</Index>\n" +
+                "                        <Phone>+491734982893</Phone>\n" +
+                "                        <Content>huhu</Content>\n" +
+                "                        <Date>2021-04-23 14:23:55</Date>\n" +
+                "                        <Sca></Sca>\n" +
+                "                        <SaveType>0</SaveType>\n" +
+                "                        <Priority>0</Priority>\n" +
+                "                        <SmsType>1</SmsType>\n" +
+                "                </Message>\n" +
+                "                <Message>\n" +
+                "                        <Smstat>0</Smstat>\n" +
+                "                        <Index>40029</Index>\n" +
+                "                        <Phone>+491734982893</Phone>\n" +
+                "                        <Content>huhu</Content>\n" +
+                "                        <Date>2021-04-23 14:17:48</Date>\n" +
+                "                        <Sca></Sca>\n" +
+                "                        <SaveType>0</SaveType>\n" +
+                "                        <Priority>0</Priority>\n" +
+                "                        <SmsType>1</SmsType>\n" +
+                "                </Message>\n" +
+                "                <Message>\n" +
+                "                        <Smstat>0</Smstat>\n" +
+                "                        <Index>40034</Index>\n" +
+                "                        <Phone>+4915206834192</Phone>\n" +
+                "                        <Content></Content>\n" +
+                "                        <Date>2021-04-23 18:22:36</Date>\n" +
+                "                        <Sca></Sca>\n" +
+                "                        <SaveType>0</SaveType>\n" +
+                "                        <Priority>0</Priority>\n" +
+                "                        <SmsType>5</SmsType>\n" +
+                "                </Message>\n" +
+                "                <Message>\n" +
+                "                        <Smstat>0</Smstat>\n" +
+                "                        <Index>40033</Index>\n" +
+                "                        <Phone>+4915206834192</Phone>\n" +
+                "                        <Content></Content>\n" +
+                "                        <Date>2021-04-23 17:12:32</Date>\n" +
+                "                        <Sca></Sca>\n" +
+                "                        <SaveType>0</SaveType>\n" +
+                "                        <Priority>0</Priority>\n" +
+                "                        <SmsType>5</SmsType>\n" +
+                "                </Message>\n" +
+                "                <Message>\n" +
+                "                        <Smstat>0</Smstat>\n" +
+                "                        <Index>40032</Index>\n" +
+                "                        <Phone>+4915206834192</Phone>\n" +
+                "                        <Content></Content>\n" +
+                "                        <Date>2021-04-23 16:31:42</Date>\n" +
+                "                        <Sca></Sca>\n" +
+                "                        <SaveType>0</SaveType>\n" +
+                "                        <Priority>0</Priority>\n" +
+                "                        <SmsType>5</SmsType>\n" +
+                "                </Message>\n" +
+                "                <Message>\n" +
+                "                        <Smstat>0</Smstat>\n" +
+                "                        <Index>40019</Index>\n" +
+                "                        <Phone>+4915206834192</Phone>\n" +
+                "                        <Content></Content>\n" +
+                "                        <Date>2021-04-23 14:16:39</Date>\n" +
+                "                        <Sca></Sca>\n" +
+                "                        <SaveType>0</SaveType>\n" +
+                "                        <Priority>0</Priority>\n" +
+                "                        <SmsType>5</SmsType>\n" +
+                "                </Message>\n" +
+                "        </Messages>\n" +
+                "</response>";
+
+        xmlProcessor.readXml(xml, API.SMS.Response.List.class);
     }
 
     static class Response {

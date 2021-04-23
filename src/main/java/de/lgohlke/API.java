@@ -58,16 +58,16 @@ public class API {
         private final String message;
     }
 
-    static class SMS {
+    public static class SMS {
         private final static String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-        static class Request {
+        public static class Request {
 
             @JacksonXmlRootElement(localName = "request")
             private static class Base {
             }
 
-            static class List extends Base {
+            public static class List extends Base {
                 @JsonProperty("PageIndex")
                 private final int PageIndex = 1;
                 @JsonProperty("ReadCount")
@@ -91,12 +91,12 @@ public class API {
             }
 
             @RequiredArgsConstructor
-            static class Delete extends Base {
+            public static class Delete extends Base {
                 @JsonProperty("Index")
                 private final int index;
             }
 
-            static class Send extends Base {
+            public static class Send extends Base {
                 @JsonProperty("Index")
                 private final int index = -1;
 
@@ -124,12 +124,12 @@ public class API {
             }
         }
 
-        static class Response {
+        public static class Response {
             @JacksonXmlRootElement(localName = "response")
             private static class Base {
             }
 
-            static class List extends Request.Base {
+            public static class List extends Request.Base {
                 @JsonProperty("Count")
                 int count;
 
@@ -193,6 +193,7 @@ public class API {
                         TEXT(0),
                         INCOMING(1),
                         DATA_VOLUME_EXCEEDED(2),
+                        TYPE_5(5),
                         STATUS(7);
 
                         private final int status;
