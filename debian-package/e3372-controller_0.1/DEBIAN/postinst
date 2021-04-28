@@ -9,5 +9,7 @@ if [[ ! -e "/etc/e3372-controler.env" ]]; then
 fi
 
 systemctl enable $service
+echo "restarting"
 systemctl restart $service
+echo "showing status"
 systemctl status $service
