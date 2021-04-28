@@ -73,7 +73,7 @@ public class API {
                 @JsonProperty("ReadCount")
                 private final int ReadCount;
                 @JsonProperty("BoxType")
-                private final int BoxType = 1;
+                private final int BoxType = 1; // 1=INBOX, 2=OUTBOX
                 @JsonProperty("SortType")
                 private final int SortType = 1;
                 @JsonProperty("Ascending")
@@ -241,14 +241,14 @@ public class API {
 
             @SneakyThrows
             private static SMS.Response.Status send(String phone, String content) {
+                System.out.println("send to '" + phone + "' text: '" + content + "'");
                 var request = new Request.Send(phone, content);
                 var payload = writeXml(request, false);
+
                 var response = post("/api/sms/send-sms", payload);
-                try {
-                    return readXml(response, SMS.Response.Status.class);
-                } finally {
-                    TimeUnit.SECONDS.sleep(2); // else error 113004, throttling seems good idea
-                }
+                TimeUnit.SECONDS.sleep(2); // else error 113004, throttling seems good idea
+
+                return readXml(response, SMS.Response.Status.class);
             }
         }
     }
@@ -272,6 +272,7 @@ public class API {
         } catch (Exception e) {
             if (e instanceof HttpConnectTimeoutException || e instanceof ConnectException || e instanceof IOException) {
                 System.err.println("http: " + e.getMessage());
+                e.printStackTrace();
             } else {
                 throw e;
             }
