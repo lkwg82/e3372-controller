@@ -14,8 +14,8 @@ public class XMLProcessor {
         try {
             return mapper.readValue(response, clazz);
         } catch (JsonProcessingException e) {
-            log.warn(e);
-            log.warn("response: {}", response);
+            log.debug(e);
+            log.debug("response: {}", response);
             try {
                 var error = mapper.readValue(response, API.Error.class);
                 throw new APIErrorException(error);

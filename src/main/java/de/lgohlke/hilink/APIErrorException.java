@@ -7,10 +7,6 @@ import lombok.Getter;
 public class APIErrorException extends RuntimeException {
     private final API.Error error;
 
-    public APIErrorException() {
-        this(new API.Error(-1, "leer"));
-    }
-
     public APIErrorException(API.Error error) {
         this.error = error;
     }
