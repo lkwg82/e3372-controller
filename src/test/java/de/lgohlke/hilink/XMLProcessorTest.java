@@ -1,8 +1,9 @@
 package de.lgohlke.hilink;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.Test;
 
@@ -72,10 +73,16 @@ public class XMLProcessorTest {
         assertThatThrownBy(callable).isInstanceOf(APIErrorException.class);
     }
 
-    @RequiredArgsConstructor
     @Getter
+    @EqualsAndHashCode
     static final class TestObject {
         private final String name;
         private final int age;
+
+        TestObject(@JsonProperty("name") String name,
+                   @JsonProperty("age") int age) {
+            this.name = name;
+            this.age = age;
+        }
     }
 }

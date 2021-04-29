@@ -52,10 +52,16 @@ public class API {
     }
 
     @Getter
-    @RequiredArgsConstructor
     public static final class Error {
         private final int code;
         private final String message;
+
+        @JsonCreator
+        public Error(@JsonProperty("code") int code,
+                     @JsonProperty("message") String message) {
+            this.code = code;
+            this.message = message;
+        }
     }
 
     public static class SMS {
