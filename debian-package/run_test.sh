@@ -41,6 +41,6 @@ vagrant up
 vagrant upload e3372-controller.deb
 vagrant ssh -c 'sudo dpkg -i e3372-controller.deb || sudo apt-get install -f -y'
 vagrant ssh -c 'sudo dpkg -i e3372-controller.deb'
-vagrant ssh -c 'sudo shutdown -r now'
+vagrant ssh -c 'sudo shutdown -r now & exit'
 sleep 10
 vagrant ssh -c 'sudo systemctl status e3372-controller'
