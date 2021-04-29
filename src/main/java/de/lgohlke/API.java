@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class API {
     private static final String DEFAULT_BASE_PATH = "http://192.168.8.1";
 
@@ -67,6 +69,24 @@ public class API {
     public static class SMS {
         private final static String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
+        @RequiredArgsConstructor
+        @Getter
+        public enum BOXTYPE {
+            INBOX(1),
+            OUTBOX(2);
+
+            private final int type;
+
+            public static BOXTYPE valueof(int type) {
+                for (var value : BOXTYPE.values()) {
+                    if (value.type == type) {
+                        return value;
+                    }
+                }
+                throw new IllegalArgumentException("could not map " + BOXTYPE.class + ": " + type);
+            }
+        }
+
         public static class Request {
 
             @JacksonXmlRootElement(localName = "request")
@@ -77,9 +97,9 @@ public class API {
                 @JsonProperty("PageIndex")
                 private final int PageIndex = 1;
                 @JsonProperty("ReadCount")
-                private final int ReadCount;
+                private final int readCount;
                 @JsonProperty("BoxType")
-                private final int BoxType = 1; // 1=INBOX, 2=OUTBOX
+                private final int boxtype;
                 @JsonProperty("SortType")
                 private final int SortType = 1;
                 @JsonProperty("Ascending")
@@ -87,13 +107,15 @@ public class API {
                 @JsonProperty("UnreadPreferred")
                 private final int UnreadPreferred = 1;
 
-                public List(int readcount) {
-                    ReadCount = readcount;
+                public List(SMS.BOXTYPE boxtype, int readcount) {
+                    readCount = readcount;
+                    this.boxtype = boxtype.getType();
                 }
 
-                public List() {
-                    this(1);
+                public List(SMS.BOXTYPE boxtype) {
+                    this(boxtype, 1);
                 }
+
             }
 
             @RequiredArgsConstructor
@@ -230,6 +252,7 @@ public class API {
             }
         }
 
+        @Slf4j
         static class Actions {
             @SneakyThrows
             private static SMS.Response.Status delete(Response.List.Message message) {
@@ -239,15 +262,15 @@ public class API {
             }
 
             @SneakyThrows
-            static List<Response.List.Message> list() {
-                var payload = writeXml(new Request.List(20));
+            static List<Response.List.Message> list(BOXTYPE boxtype) {
+                var payload = writeXml(new Request.List(boxtype, 20));
                 var response = post("/api/sms/sms-list", payload);
                 return readXml(response, Response.List.class).messages;
             }
 
             @SneakyThrows
             private static SMS.Response.Status send(String phone, String content) {
-                System.out.println("send to '" + phone + "' text: '" + content + "'");
+                log.info("send to '{}' text: '{}'", phone, content);
                 var request = new Request.Send(phone, content);
                 var payload = writeXml(request, false);
 
@@ -263,21 +286,30 @@ public class API {
         var redirectTo = System.getenv("REDIRECT_PHONE_NUMBER");
         Objects.requireNonNull(redirectTo, "missing number to redirect: REDIRECT_PHONE_NUMBER");
         try {
-            SMS.Actions.list().forEach(message -> {
-                System.out.println(message);
+            SMS.Actions.list(SMS.BOXTYPE.INBOX).forEach(message -> {
+                log.info(message.toString());
 
                 handleSMS(redirectTo, message);
 
                 var status = SMS.Actions.delete(message);
                 if (status.isOk()) {
-                    System.out.println("removed " + message.getIndex());
+                    log.info("removed {}", message.getIndex());
                 } else {
-                    System.err.println(status.getStatus());
+                    log.error(status.getStatus());
+                }
+            });
+
+            SMS.Actions.list(SMS.BOXTYPE.OUTBOX).forEach(message -> {
+                var status = SMS.Actions.delete(message);
+                if (status.isOk()) {
+                    log.info("removed {}", message.getIndex());
+                } else {
+                    log.error(status.getStatus());
                 }
             });
         } catch (Exception e) {
             if (e instanceof HttpConnectTimeoutException || e instanceof ConnectException || e instanceof IOException) {
-                System.err.println("http: " + e.getMessage());
+                log.error("http: " + e.getMessage());
                 e.printStackTrace();
             } else {
                 throw e;
@@ -294,7 +326,7 @@ public class API {
             SMS.Actions.send(redirectTo, content);
             if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED) {
                 if (message.getContent().contains("noch kein Upgrade buchen")) {
-                    System.out.println("no upgrade yet");
+                    log.info("no upgrade yet");
                 } else {
                     SMS.Actions.send(message.getPhone(), "2");
                     SMS.Actions.send(redirectTo, "extends data volume");
@@ -302,7 +334,7 @@ public class API {
             }
         } else {
             try {
-                System.out.println("skip: " + writeXml(message));
+                log.info("skip: {}", writeXml(message));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }

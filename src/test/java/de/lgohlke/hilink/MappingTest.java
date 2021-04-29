@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import de.lgohlke.API;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -146,6 +147,24 @@ public class MappingTest {
                 "</response>";
 
         xmlProcessor.readXml(xml, API.SMS.Response.List.class);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_valid_xml_sms_list_request() {
+        var request = new API.SMS.Request.List(API.SMS.BOXTYPE.INBOX);
+        var xml = xmlProcessor.writeXml(request);
+
+        var expected = "<request>\n" +
+                "  <PageIndex>1</PageIndex>\n" +
+                "  <ReadCount>1</ReadCount>\n" +
+                "  <BoxType>1</BoxType>\n" +
+                "  <SortType>1</SortType>\n" +
+                "  <Ascending>0</Ascending>\n" +
+                "  <UnreadPreferred>1</UnreadPreferred>\n" +
+                "</request>\n" +
+                "";
+        assertThat(xml).isEqualTo(expected);
     }
 
     static class Response {
