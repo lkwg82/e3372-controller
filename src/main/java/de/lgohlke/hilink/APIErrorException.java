@@ -4,7 +4,7 @@ import de.lgohlke.API;
 import lombok.Getter;
 
 @Getter
-public class APIErrorException extends Exception {
+public class APIErrorException extends RuntimeException {
     private final API.Error error;
 
     public APIErrorException() {

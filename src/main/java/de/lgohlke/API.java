@@ -356,8 +356,15 @@ public class API {
                 .header("Content-Type", "text/xml")
                 .build();
         var responseBodyHandler = HttpResponse.BodyHandlers.ofString();
-        var response = client.send(request, responseBodyHandler);
-        return response.body();
+        try {
+            var response = client.send(request, responseBodyHandler);
+            return response.body();
+        } catch (IOException e) {
+            log.warn("retrying post");
+            TimeUnit.MILLISECONDS.sleep(1500);
+            var response = client.send(request, responseBodyHandler);
+            return response.body();
+        }
     }
 
     private static HttpClient createClient() {
@@ -370,8 +377,15 @@ public class API {
         HttpClient client = createClient();
         var uri = new URI(DEFAULT_BASE_PATH + path);
         var request = HttpRequest.newBuilder().uri(uri).GET().build();
-        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return response.body();
+        try {
+            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        } catch (IOException e) {
+            log.warn("retrying get");
+            TimeUnit.MILLISECONDS.sleep(1500);
+            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        }
     }
 
 
