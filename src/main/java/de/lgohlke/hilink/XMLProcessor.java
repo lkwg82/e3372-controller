@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import de.lgohlke.API;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class XMLProcessor {
     public <T> T readXml(String response, Class<T> clazz) throws JsonProcessingException, APIErrorException {
         var mapper = new XmlMapper();
@@ -12,12 +14,12 @@ public class XMLProcessor {
         try {
             return mapper.readValue(response, clazz);
         } catch (JsonProcessingException e) {
-            System.err.println(response);
+            log.warn(e);
             try {
                 var error = mapper.readValue(response, API.Error.class);
                 throw new APIErrorException(error);
             } catch (JsonProcessingException e2) {
-                System.err.println(response);
+                log.error(response);
                 throw e2;
             }
         }

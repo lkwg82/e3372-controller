@@ -201,7 +201,8 @@ public class API {
                     @Getter
                     enum SMSTAT {
                         READ(0),
-                        UNREAD(1);
+                        UNREAD(1),
+                        SENT(3);
 
                         private final int status;
 
