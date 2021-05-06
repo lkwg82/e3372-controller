@@ -3,6 +3,7 @@ package de.lgohlke.hilink;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import de.lgohlke.hilink.api.Device;
 import de.lgohlke.hilink.api.Error;
 import de.lgohlke.hilink.api.SMS;
 import de.lgohlke.hilink.api.SessionToken;
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MappingTest {
 
-    private XMLProcessor xmlProcessor = new XMLProcessor();
+    private final XMLProcessor xmlProcessor = new XMLProcessor();
 
     @Test
     void map_error() throws JsonProcessingException, APIErrorException {
@@ -167,6 +168,58 @@ public class MappingTest {
                 "</request>\n" +
                 "";
         assertThat(xml).isEqualTo(expected);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_map_response_device_signal() {
+        var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<response>\n" +
+                "<pci>356</pci>\n" +
+                "<sc></sc>\n" +
+                "<cell_id>2576387</cell_id>\n" +
+                "<rsrq>-7.0dB</rsrq>\n" +
+                "<rsrp>-89dBm</rsrp>\n" +
+                "<rssi>-69dBm</rssi>\n" +
+                "<sinr>6dB</sinr>\n" +
+                "<rscp></rscp>\n" +
+                "<ecio></ecio>\n" +
+                "<mode>7</mode>\n" +
+                "<ulbandwidth>10MHz</ulbandwidth>\n" +
+                "<dlbandwidth>10MHz</dlbandwidth>\n" +
+                "<txpower>PPusch:6dBm PPucch:-5dBm PSrs:23dBm PPrach:7dBm</txpower>\n" +
+                "<tdd>SubframeAssign:0 SubframePatterns:0 </tdd>\n" +
+                "<ul_mcs>mcsUpCarrier1:29</ul_mcs>\n" +
+                "<dl_mcs>mcsDownCarrier1Code0:0 mcsDownCarrier1Code1:0</dl_mcs>\n" +
+                "<earfcn>DL:6300 UL:24300</earfcn>\n" +
+                "<rrc_status></rrc_status>\n" +
+                "<rac></rac>\n" +
+                "<lac></lac>\n" +
+                "<tac>49106</tac>\n" +
+                "<band>20</band>\n" +
+                "<nei_cellid></nei_cellid>\n" +
+                "<plmn>26202</plmn>\n" +
+                "<ims>0</ims>\n" +
+                "<wdlfreq></wdlfreq>\n" +
+                "<lteulfreq>8470</lteulfreq>\n" +
+                "<ltedlfreq>8060</ltedlfreq>\n" +
+                "<transmode>TM[3]</transmode>\n" +
+                "<enodeb_id>0010064</enodeb_id>\n" +
+                "<cqi0>9</cqi0>\n" +
+                "<cqi1>9</cqi1>\n" +
+                "<ulfrequency>847000kHz</ulfrequency>\n" +
+                "<dlfrequency>806000kHz</dlfrequency>\n" +
+                "<arfcn></arfcn>\n" +
+                "<bsic></bsic>\n" +
+                "<rxlev></rxlev>\n" +
+                "</response>";
+
+        var signal = xmlProcessor.readXml(xml, Device.Response.Signal.class);
+
+        assertThat(signal.getPci()).isEqualTo(356);
+        assertThat(signal.getRsrp()).isEqualTo(-89);
+        assertThat(signal.getRssi()).isEqualTo(-69);
+        assertThat(signal.getRsrq()).isEqualTo(-7);
     }
 
     static class Response {
