@@ -19,8 +19,13 @@ public class FetchStatisticsTest {
             }
         };
 
-        new FetchStatistics(telegrafTransmitter).doTask();
-        assertThat(outputs).hasSize(1);
+        var fetchStatistics = new FetchStatistics(telegrafTransmitter);
+
+        var max = 1;
+        for (int i = 0; i < max; i++) {
+            fetchStatistics.doTask();
+        }
+        assertThat(outputs).hasSize(3);
     }
 
 }

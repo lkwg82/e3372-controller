@@ -10,11 +10,15 @@ public abstract class Task implements Runnable {
                   .setName(getClass().getSimpleName());
             while (true) {
                 doTask();
-                TimeUnit.SECONDS.sleep(2);
+                sleep_time();
             }
         } catch (Exception e) {
             signalException(e);
         }
+    }
+
+    protected void sleep_time() throws InterruptedException {
+        TimeUnit.SECONDS.sleep(5);
     }
 
     final void signalException(Exception e) {

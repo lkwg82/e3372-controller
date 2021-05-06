@@ -66,6 +66,10 @@ class DataLimitExceededTask extends Task {
         }
     }
 
+    @Override
+    protected void sleep_time() throws InterruptedException {
+        TimeUnit.SECONDS.sleep(3);
+    }
 
     private void handleSMS(String redirectTo, SMS.Response.List.Message message) {
         if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED || message

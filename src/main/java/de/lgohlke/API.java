@@ -16,11 +16,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class API {
     private static final String DEFAULT_BASE_PATH = "http://192.168.8.1";
+    private final static Semaphore MUTEX = new Semaphore(1);
 
     private static HttpClient createClient() {
         return HttpClient.newBuilder()
@@ -29,18 +31,40 @@ public class API {
                          .build();
     }
 
-    public static String post(String path, String payload) throws URISyntaxException, IOException, InterruptedException, ParserConfigurationException, SAXException {
-        HttpClient client = createClient();
-        var uri = new URI(DEFAULT_BASE_PATH + path);
 
-        var sessionToken = fetchSessionToken();
-        var request = HttpRequest.newBuilder()
-                                 .uri(uri)
-                                 .POST(HttpRequest.BodyPublishers.ofString(payload))
-                                 .header("__RequestVerificationToken", sessionToken.getTokenInfo())
-                                 .header("Cookie", "SessionId=" + sessionToken.getSessionInfo())
-                                 .header("Content-Type", "text/xml")
-                                 .build();
+    public static String post(String path, String payload) throws URISyntaxException, IOException, InterruptedException, ParserConfigurationException, SAXException {
+        MUTEX.acquire();
+        try {
+            return inner_post(path, payload);
+        } finally {
+            MUTEX.release();
+        }
+    }
+
+    public static String get(String path) throws URISyntaxException, IOException, InterruptedException, ParserConfigurationException, SAXException {
+        MUTEX.acquire();
+        try {
+            return inner_get_plain(path);
+        } finally {
+            MUTEX.release();
+        }
+    }
+
+    public static String get_authenticated(String path) throws URISyntaxException, IOException, InterruptedException, ParserConfigurationException, SAXException {
+        MUTEX.acquire();
+        try {
+            return inner_get(path);
+        } finally {
+            MUTEX.release();
+        }
+    }
+
+    private static String inner_post(String path, String payload) throws URISyntaxException, IOException, InterruptedException, ParserConfigurationException, SAXException {
+        HttpClient client = createClient();
+        HttpRequest.Builder requestBuilder = getRequestBuilder(path);
+
+        var request = requestBuilder.POST(HttpRequest.BodyPublishers.ofString(payload))
+                                    .build();
         var responseBodyHandler = HttpResponse.BodyHandlers.ofString();
         try {
             log.info("posting {} ... ", path);
@@ -55,13 +79,43 @@ public class API {
         }
     }
 
-    public static String get(String path) throws URISyntaxException, IOException, InterruptedException {
+    private static HttpRequest.Builder getRequestBuilder(String path) throws URISyntaxException {
+        var uri = new URI(DEFAULT_BASE_PATH + path);
+
+        var sessionToken = fetchSessionToken();
+        var requestBuilder = HttpRequest.newBuilder()
+                                        .uri(uri)
+                                        .header("__RequestVerificationToken", sessionToken.getTokenInfo())
+                                        .header("Cookie", "SessionId=" + sessionToken.getSessionInfo())
+                                        .header("Content-Type", "text/xml");
+        return requestBuilder;
+    }
+
+    private static String inner_get(String path) throws URISyntaxException, IOException, InterruptedException {
+        HttpClient client = createClient();
+        var requestBuilder = getRequestBuilder(path);
+        var request = requestBuilder.GET()
+                                    .build();
+        try {
+            log.info("getting {} ... ", path);
+            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        } catch (IOException e) {
+            log.warn("retrying get");
+            TimeUnit.MILLISECONDS.sleep(1500);
+            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        }
+    }
+
+    private static String inner_get_plain(String path) throws URISyntaxException, IOException, InterruptedException {
         HttpClient client = createClient();
         var uri = new URI(DEFAULT_BASE_PATH + path);
+
         var request = HttpRequest.newBuilder()
                                  .uri(uri)
+                                 .header("Content-Type", "text/xml")
                                  .GET()
-                                 .version(HttpClient.Version.HTTP_1_1)
                                  .build();
         try {
             log.info("getting {} ... ", path);
@@ -75,10 +129,9 @@ public class API {
         }
     }
 
-
     @SneakyThrows
     private static SessionToken fetchSessionToken() {
-        var response = get("/api/webserver/SesTokInfo");
+        var response = inner_get_plain("/api/webserver/SesTokInfo");
         return readXml(response, SessionToken.class);
     }
 
@@ -94,3 +147,4 @@ public class API {
         return new XMLProcessor().writeXml(o, indent);
     }
 }
+

@@ -39,7 +39,7 @@ public class Monitoring {
     public static class Actions {
         @SneakyThrows
         public static Response.Status status() {
-            var response = API.get("/api/monitoring/status");
+            var response = API.get_authenticated("/api/monitoring/status");
             return API.readXml(response, Response.Status.class);
         }
 
