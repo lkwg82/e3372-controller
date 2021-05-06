@@ -3,7 +3,6 @@ package de.lgohlke;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.lgohlke.hilink.APIErrorException;
 import de.lgohlke.hilink.XMLProcessor;
-import de.lgohlke.hilink.api.SMS;
 import de.lgohlke.hilink.api.SessionToken;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -11,90 +10,17 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
-import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class API {
     private static final String DEFAULT_BASE_PATH = "http://192.168.8.1";
-
-    @SneakyThrows
-    void demo() {
-        var redirectTo = System.getenv("REDIRECT_PHONE_NUMBER");
-        Objects.requireNonNull(redirectTo, "missing number to redirect: REDIRECT_PHONE_NUMBER");
-        try {
-            SMS.Actions.list(SMS.BOXTYPE.INBOX)
-                       .forEach(message -> {
-                           log.info(message.toString());
-
-                           handleSMS(redirectTo, message);
-
-                           var status = SMS.Actions.delete(message);
-                           if (status.isOk()) {
-                               log.info("removed {}", message.getIndex());
-                           } else {
-                               log.error(status.getStatus());
-                           }
-                       });
-
-            SMS.Actions.list(SMS.BOXTYPE.OUTBOX)
-                       .forEach(message -> {
-                           var status = SMS.Actions.delete(message);
-                           if (status.isOk()) {
-                               log.info("removed {}", message.getIndex());
-                           } else {
-                               log.error(status.getStatus());
-                           }
-                       });
-        } catch (Exception e) {
-            if (e instanceof HttpConnectTimeoutException || e instanceof ConnectException) {
-                log.error("http: " + e.getMessage());
-                e.printStackTrace();
-            } else if (e instanceof IOException) {
-                log.warn(e.getMessage());
-            } else if (e instanceof APIErrorException) {
-                var apiErrorException = (APIErrorException) e;
-                var error = apiErrorException.getError();
-                log.warn("code {} name '{}' message '{}'", error.getCode(), error.getError_code(), error.getMessage());
-                TimeUnit.SECONDS.sleep(5);
-            } else {
-                throw e;
-            }
-        }
-    }
-
-    private void handleSMS(String redirectTo, SMS.Response.List.Message message) {
-        if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED || message
-                .getType() == SMS.Response.List.Message.TYPE.INCOMING) {
-            var content = "received from " + message.getPhone() + "\n" +
-//                        "at " + message.getDate() + "\n" +
-                    message.getContent();
-            SMS.Actions.send(redirectTo, content);
-            if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED) {
-                if (message.getContent()
-                           .contains("noch kein Upgrade buchen")) {
-                    log.info("no upgrade yet");
-                } else {
-                    SMS.Actions.send(message.getPhone(), "2");
-                    SMS.Actions.send(redirectTo, "extends data volume");
-                }
-            }
-        } else {
-            try {
-                log.info("skip: {}", writeXml(message));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     private static HttpClient createClient() {
         return HttpClient.newBuilder()
