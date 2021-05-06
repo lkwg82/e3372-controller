@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 
 @Log4j2
 public class Main {
-    public static void main(String... args) throws Exception {
+    public static void main(String... args) {
         var executorService = Executors.newCachedThreadPool();
         executorService.submit(new DataLimitExceededTask());
     }

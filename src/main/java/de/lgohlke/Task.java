@@ -1,17 +1,25 @@
 package de.lgohlke;
 
-import lombok.SneakyThrows;
-
 import java.util.concurrent.TimeUnit;
 
 abstract class Task implements Runnable {
     @Override
-    @SneakyThrows
     public final void run() {
-        while (true) {
-            doTask();
-            TimeUnit.SECONDS.sleep(2);
+        try {
+            Thread.currentThread()
+                  .setName(getClass().getSimpleName());
+            while (true) {
+                doTask();
+                TimeUnit.SECONDS.sleep(2);
+            }
+        } catch (Exception e) {
+            signalException(e);
         }
+    }
+
+    final void signalException(Exception e) {
+        e.printStackTrace();
+        System.exit(1);
     }
 
     abstract void doTask();
