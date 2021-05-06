@@ -20,6 +20,16 @@ public class Monitoring {
         @JsonIgnoreProperties(ignoreUnknown = true)
         @ToString
         public static class Status extends Base {
+            // https://github.com/trick77/huawei-hilink-status/blob/master/hstatus.py#L66
+            //
+            // 201 = connection failed, bandwidth exceeded
+            // 900 = connecting
+            // 901/902 = connected
+            // 903 = disconnected
+            // 903 = disconnected
+            // 904 = disconnecting
+            @JsonProperty("ConnectionStatus")
+            int connectionStatus;
             @JsonProperty("SignalIcon")
             int signalIcon;
         }
