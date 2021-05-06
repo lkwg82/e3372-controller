@@ -3,7 +3,9 @@ package de.lgohlke.hilink;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import de.lgohlke.API;
+import de.lgohlke.hilink.api.Error;
+import de.lgohlke.hilink.api.SMS;
+import de.lgohlke.hilink.api.SessionToken;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +26,7 @@ public class MappingTest {
                 "    <message/>\n" +
                 "</error>\n";
 
-        var o = xmlProcessor.readXml(response, API.Error.class);
+        var o = xmlProcessor.readXml(response, Error.class);
 
         assertThat(o.getCode()).isEqualTo(125003);
         assertThat(o.getMessage()).isEmpty();
@@ -42,7 +44,7 @@ public class MappingTest {
     void map_session_token() throws APIErrorException, JsonProcessingException {
         var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><response><SesInfo>947p2llduTUXKWm2f7sW3OHIRQ2r08QcDL2BQt1OP8qGuk5T5vwQZDizWkAJ0ki6mv2ioVxsKXwhla73ehgd9OFk2gehdP9hcY6EVlI8DFCAk0PoIyjxL4GRBh6h2rQm</SesInfo><TokInfo>T8lgAWOEnf0QBe4eVjRyi1wp9z2FQgl8</TokInfo></response>";
 
-        xmlProcessor.readXml(xml, API.SessionToken.class);
+        xmlProcessor.readXml(xml, SessionToken.class);
     }
 
     @Test
@@ -146,13 +148,13 @@ public class MappingTest {
                 "        </Messages>\n" +
                 "</response>";
 
-        xmlProcessor.readXml(xml, API.SMS.Response.List.class);
+        xmlProcessor.readXml(xml, SMS.Response.List.class);
     }
 
     @Test
     @SneakyThrows
     void should_valid_xml_sms_list_request() {
-        var request = new API.SMS.Request.List(API.SMS.BOXTYPE.INBOX);
+        var request = new SMS.Request.List(SMS.BOXTYPE.INBOX);
         var xml = xmlProcessor.writeXml(request);
 
         var expected = "<request>\n" +

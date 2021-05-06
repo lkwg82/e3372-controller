@@ -3,7 +3,7 @@ package de.lgohlke.hilink;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import de.lgohlke.API;
+import de.lgohlke.hilink.api.Error;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -17,7 +17,7 @@ public class XMLProcessor {
             log.debug(e);
             log.debug("response: {}", response);
             try {
-                var error = mapper.readValue(response, API.Error.class);
+                var error = mapper.readValue(response, Error.class);
                 throw new APIErrorException(error);
             } catch (JsonProcessingException e2) {
                 log.error(response);
