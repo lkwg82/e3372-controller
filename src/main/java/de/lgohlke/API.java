@@ -16,6 +16,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -27,36 +28,31 @@ public class API {
     private static HttpClient createClient() {
         return HttpClient.newBuilder()
                          .version(HttpClient.Version.HTTP_1_1)
-                         .connectTimeout(Duration.ofMillis(1500))
+                         .connectTimeout(Duration.ofMillis(15000))
                          .build();
     }
 
-
-    public static String post(String path, String payload) throws URISyntaxException, IOException, InterruptedException, ParserConfigurationException, SAXException {
+    @SneakyThrows
+    private static <T> T mutex(Callable<T> callable) {
         MUTEX.acquire();
+        TimeUnit.MILLISECONDS.sleep(200);
         try {
-            return inner_post(path, payload);
+            return callable.call();
         } finally {
             MUTEX.release();
         }
+    }
+
+    public static String post(String path, String payload) throws URISyntaxException, IOException, InterruptedException, ParserConfigurationException, SAXException {
+        return mutex(() -> inner_post(path, payload));
     }
 
     public static String get(String path) throws URISyntaxException, IOException, InterruptedException, ParserConfigurationException, SAXException {
-        MUTEX.acquire();
-        try {
-            return inner_get_plain(path);
-        } finally {
-            MUTEX.release();
-        }
+        return mutex(() -> inner_get_plain(path));
     }
 
     public static String get_authenticated(String path) throws URISyntaxException, IOException, InterruptedException, ParserConfigurationException, SAXException {
-        MUTEX.acquire();
-        try {
-            return inner_get(path);
-        } finally {
-            MUTEX.release();
-        }
+        return mutex(() -> inner_get(path));
     }
 
     private static String inner_post(String path, String payload) throws URISyntaxException, IOException, InterruptedException, ParserConfigurationException, SAXException {
