@@ -19,7 +19,6 @@ public class Device {
         @JsonIgnoreProperties(ignoreUnknown = true)
         @ToString
         public static class Signal extends Base {
-
             private final int pci;
             private final int cellId;
             private final int tac;

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import de.lgohlke.hilink.api.Device;
 import de.lgohlke.hilink.api.Error;
+import de.lgohlke.hilink.api.Monitoring;
 import de.lgohlke.hilink.api.SMS;
 import de.lgohlke.hilink.api.SessionToken;
 import lombok.SneakyThrows;
@@ -220,6 +221,74 @@ public class MappingTest {
         assertThat(signal.getRsrp()).isEqualTo(-89);
         assertThat(signal.getRssi()).isEqualTo(-69);
         assertThat(signal.getRsrq()).isEqualTo(-7);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_map_response_monitoring_status() {
+        var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<response>\n" +
+                "<ConnectionStatus>901</ConnectionStatus>\n" +
+                "<WifiConnectionStatus></WifiConnectionStatus>\n" +
+                "<SignalStrength></SignalStrength>\n" +
+                "<SignalIcon>2</SignalIcon>\n" +
+                "<CurrentNetworkType>19</CurrentNetworkType>\n" +
+                "<CurrentServiceDomain>3</CurrentServiceDomain>\n" +
+                "<RoamingStatus>0</RoamingStatus>\n" +
+                "<BatteryStatus></BatteryStatus>\n" +
+                "<BatteryLevel></BatteryLevel>\n" +
+                "<BatteryPercent></BatteryPercent>\n" +
+                "<simlockStatus>0</simlockStatus>\n" +
+                "<PrimaryDns>139.7.30.125</PrimaryDns>\n" +
+                "<SecondaryDns>139.7.30.126</SecondaryDns>\n" +
+                "<wififrequence>0</wififrequence>\n" +
+                "<flymode>0</flymode>\n" +
+                "<PrimaryIPv6Dns>2a01:860:0:300::153</PrimaryIPv6Dns>\n" +
+                "<SecondaryIPv6Dns>2a01:860:0:300::53</SecondaryIPv6Dns>\n" +
+                "<CurrentWifiUser></CurrentWifiUser>\n" +
+                "<TotalWifiUser></TotalWifiUser>\n" +
+                "<currenttotalwifiuser>0</currenttotalwifiuser>\n" +
+                "<ServiceStatus>2</ServiceStatus>\n" +
+                "<SimStatus>1</SimStatus>\n" +
+                "<WifiStatus></WifiStatus>\n" +
+                "<CurrentNetworkTypeEx>101</CurrentNetworkTypeEx>\n" +
+                "<maxsignal>5</maxsignal>\n" +
+                "<wifiindooronly>0</wifiindooronly>\n" +
+                "<classify>hilink</classify>\n" +
+                "<usbup>0</usbup>\n" +
+                "<wifiswitchstatus>0</wifiswitchstatus>\n" +
+                "<WifiStatusExCustom>0</WifiStatusExCustom>\n" +
+                "<hvdcp_online>0</hvdcp_online>\n" +
+                "<speedLimitStatus>0</speedLimitStatus>\n" +
+                "<poorSignalStatus>0</poorSignalStatus>\n" +
+                "</response>";
+
+        var status = xmlProcessor.readXml(xml, Monitoring.Response.Status.class);
+
+        assertThat(status.getSignalIcon()).isEqualTo(2);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_map_response_monitoring_trafficStatistics() {
+        var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<response>\n" +
+                "<CurrentConnectTime>35856</CurrentConnectTime>\n" +
+                "<CurrentUpload>679323450</CurrentUpload>\n" +
+                "<CurrentDownload>1689913245</CurrentDownload>\n" +
+                "<CurrentDownloadRate>0</CurrentDownloadRate>\n" +
+                "<CurrentUploadRate>0</CurrentUploadRate>\n" +
+                "<TotalUpload>6352863475</TotalUpload>\n" +
+                "<TotalDownload>52302611857</TotalDownload>\n" +
+                "<TotalConnectTime>912333</TotalConnectTime>\n" +
+                "<showtraffic>1</showtraffic>\n" +
+                "<MaxUploadRate>1086461</MaxUploadRate>\n" +
+                "<MaxDownloadRate>1917665</MaxDownloadRate>\n" +
+                "</response>";
+
+        var status = xmlProcessor.readXml(xml, Monitoring.Response.TrafficStatistics.class);
+
+        assertThat(status.getTotalDownload()).isEqualTo(52302611857L);
     }
 
     static class Response {
