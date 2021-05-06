@@ -18,7 +18,7 @@ public abstract class Task implements Runnable {
     }
 
     protected void sleep_time() throws InterruptedException {
-        TimeUnit.SECONDS.sleep(5);
+        TimeUnit.SECONDS.sleep(3);
     }
 
     final void signalException(Exception e) {
