@@ -24,6 +24,8 @@ public class Device {
             private final int tac;
             private final int band;
             private final int plmn;
+            private final int lteulfreq;
+            private final int ltedlfreq;
             private final float rsrq;
             private final int rsrp;
             private final int rssi;
@@ -54,6 +56,8 @@ public class Device {
                 this.tac = tac;
                 this.band = band;
                 this.plmn = plmn;
+                this.lteulfreq = lteulfreq;
+                this.ltedlfreq = ltedlfreq;
                 this.rsrq = Float.parseFloat(rsrq.replace("dB", ""));
                 this.sinr = Integer.parseInt(sinr.replace("dB", ""));
                 this.rsrp = Integer.parseInt(rsrp.replace("dBm", ""));
