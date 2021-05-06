@@ -24,6 +24,7 @@ public class API {
 
     private static HttpClient createClient() {
         return HttpClient.newBuilder()
+                         .version(HttpClient.Version.HTTP_1_1)
                          .connectTimeout(Duration.ofMillis(1500))
                          .build();
     }
@@ -54,12 +55,13 @@ public class API {
         }
     }
 
-    private static String get(String path) throws URISyntaxException, IOException, InterruptedException {
+    public static String get(String path) throws URISyntaxException, IOException, InterruptedException {
         HttpClient client = createClient();
         var uri = new URI(DEFAULT_BASE_PATH + path);
         var request = HttpRequest.newBuilder()
                                  .uri(uri)
                                  .GET()
+                                 .version(HttpClient.Version.HTTP_1_1)
                                  .build();
         try {
             log.info("getting {} ... ", path);

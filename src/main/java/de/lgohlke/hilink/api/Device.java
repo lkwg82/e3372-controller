@@ -3,7 +3,11 @@ package de.lgohlke.hilink.api;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import de.lgohlke.API;
 import lombok.Getter;
+import lombok.SneakyThrows;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 public class Device {
     public static class Response {
@@ -13,6 +17,7 @@ public class Device {
 
         @Getter
         @JsonIgnoreProperties(ignoreUnknown = true)
+        @ToString
         public static class Signal extends Base {
 
             private final int pci;
@@ -59,6 +64,15 @@ public class Device {
                 this.dlbandwidth = Integer.parseInt(dlbandwidth.replace("MHz", ""));
                 this.mode = mode;
             }
+        }
+    }
+
+    @Slf4j
+    public static class Actions {
+        @SneakyThrows
+        public static Response.Signal fetchSignal() {
+            var response = API.get("/api/device/signal");
+            return API.readXml(response, Response.Signal.class);
         }
     }
 }

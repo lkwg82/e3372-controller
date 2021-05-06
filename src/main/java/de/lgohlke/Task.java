@@ -2,7 +2,7 @@ package de.lgohlke;
 
 import java.util.concurrent.TimeUnit;
 
-abstract class Task implements Runnable {
+public abstract class Task implements Runnable {
     @Override
     public final void run() {
         try {
@@ -22,5 +22,5 @@ abstract class Task implements Runnable {
         System.exit(1);
     }
 
-    abstract void doTask();
+    public abstract void doTask();
 }
