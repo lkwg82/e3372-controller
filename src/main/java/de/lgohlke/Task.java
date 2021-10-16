@@ -23,7 +23,6 @@ public abstract class Task implements Runnable {
 
     final void signalException(Exception e) {
         e.printStackTrace();
-        System.exit(1);
     }
 
     public abstract void doTask();
