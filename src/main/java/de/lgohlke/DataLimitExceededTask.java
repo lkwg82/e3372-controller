@@ -72,27 +72,59 @@ class DataLimitExceededTask extends Task {
     }
 
     private void handleSMS(String redirectTo, SMS.Response.List.Message message) {
-        if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED || message
-                .getType() == SMS.Response.List.Message.TYPE.INCOMING) {
-            var content = "received from " + message.getPhone() + "\n" +
-//                        "at " + message.getDate() + "\n" +
-                    message.getContent();
+
+        var type = message.getType();
+
+        if (type == SMS.Response.List.Message.TYPE.STATUS && message.getStatus() == SMS.Response.List.Message.SMSTAT.READ) {
+            System.out.println("SMS read");
+        } else {
+            var content = "received from " + message.getPhone() + "\n" + message.getContent();
             SMS.Actions.send(redirectTo, content);
-            if (message.getType() == SMS.Response.List.Message.TYPE.DATA_VOLUME_EXCEEDED) {
-                if (message.getContent()
-                           .contains("noch kein Upgrade buchen")) {
-                    log.info("no upgrade yet");
-                } else {
-                    SMS.Actions.send(message.getPhone(), "2");
-                    SMS.Actions.send(redirectTo, "extends data volume");
-                }
+        }
+        switch (type) {
+            case DATA_VOLUME_EXCEEDED:
+                handleDataVolumeExceeded(redirectTo, message);
+                break;
+            case INCOMING:
+                handleIncoming(redirectTo, message);
+                break;
+            default:
+                handleUnknownType(message);
+        }
+    }
+
+    private void handleUnknownType(SMS.Response.List.Message message) {
+        try {
+            log.info("skip: {}", API.writeXml(message));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleIncoming(String redirectTo, SMS.Response.List.Message message) {
+        if (message.getPhone()
+                   .equals(redirectTo)) {
+            System.out.println("received");
+            System.out.println(message.getContent());
+            if ("2".equals(message.getContent())) {
+                orderVolume(redirectTo);
             }
         } else {
-            try {
-                log.info("skip: {}", API.writeXml(message));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+            handleUnknownType(message);
         }
+    }
+
+    private void handleDataVolumeExceeded(String redirectTo, SMS.Response.List.Message message) {
+        if (message.getContent()
+                   .contains("noch kein Upgrade buchen")) {
+            log.info("no upgrade yet");
+        } else {
+            orderVolume(redirectTo);
+        }
+    }
+
+    private void orderVolume(String redirectTo) {
+        SMS.Actions.send("70997", "2");
+        SMS.Actions.send(redirectTo, "extends data volume");
     }
 }

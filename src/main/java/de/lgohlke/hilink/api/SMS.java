@@ -152,7 +152,7 @@ public class SMS {
 
                 @RequiredArgsConstructor
                 @Getter
-                enum SMSTAT {
+                public enum SMSTAT {
                     READ(0),
                     UNREAD(1),
                     SENT(3);
