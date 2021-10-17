@@ -1,5 +1,7 @@
 package de.lgohlke;
 
+import de.lgohlke.hilink.FetchStatistics;
+import de.lgohlke.hilink.TelegrafTransmitter;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.concurrent.Executors;
@@ -11,7 +13,7 @@ public class Main {
         var dataLimitExceededTask = new DataLimitExceededTask();
         executorService.submit(dataLimitExceededTask);
         executorService.submit(new UploadCheckTask(dataLimitExceededTask));
-//        executorService.submit(new FetchStatistics(new TelegrafTransmitter()));
+        executorService.submit(new FetchStatistics(new TelegrafTransmitter()));
     }
 }
 
