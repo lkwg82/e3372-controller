@@ -14,20 +14,24 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 class DataLimitExceededTask extends Task {
+    private final String redirectTo;
+
+    DataLimitExceededTask() {
+        log.info(" checking  ...");
+        var redirectTo = System.getenv("REDIRECT_PHONE_NUMBER");
+        Objects.requireNonNull(redirectTo, "missing number to redirect: REDIRECT_PHONE_NUMBER");
+        this.redirectTo = redirectTo;
+    }
 
     @SneakyThrows
     @Override
     public void doTask() {
-
-        log.info(" checking  ...");
-        var redirectTo = System.getenv("REDIRECT_PHONE_NUMBER");
-        Objects.requireNonNull(redirectTo, "missing number to redirect: REDIRECT_PHONE_NUMBER");
         try {
             SMS.Actions.list(SMS.BOXTYPE.INBOX)
                        .forEach(message -> {
                            log.info(message.toString());
 
-                           handleSMS(redirectTo, message);
+                           handleSMS(message);
 
                            var status = SMS.Actions.delete(message);
                            if (status.isOk()) {
@@ -71,7 +75,7 @@ class DataLimitExceededTask extends Task {
         TimeUnit.SECONDS.sleep(3);
     }
 
-    private void handleSMS(String redirectTo, SMS.Response.List.Message message) {
+    private void handleSMS(SMS.Response.List.Message message) {
 
         var type = message.getType();
 
@@ -83,10 +87,10 @@ class DataLimitExceededTask extends Task {
         }
         switch (type) {
             case DATA_VOLUME_EXCEEDED:
-                handleDataVolumeExceeded(redirectTo, message);
+                handleDataVolumeExceeded(message);
                 break;
             case INCOMING:
-                handleIncoming(redirectTo, message);
+                handleIncoming(message);
                 break;
             default:
                 handleUnknownType(message);
@@ -101,29 +105,29 @@ class DataLimitExceededTask extends Task {
         }
     }
 
-    private void handleIncoming(String redirectTo, SMS.Response.List.Message message) {
+    private void handleIncoming(SMS.Response.List.Message message) {
         if (message.getPhone()
                    .equals(redirectTo)) {
             System.out.println("received");
             System.out.println(message.getContent());
             if ("2".equals(message.getContent())) {
-                orderVolume(redirectTo);
+                orderVolume();
             }
         } else {
             handleUnknownType(message);
         }
     }
 
-    private void handleDataVolumeExceeded(String redirectTo, SMS.Response.List.Message message) {
+    private void handleDataVolumeExceeded(SMS.Response.List.Message message) {
         if (message.getContent()
                    .contains("noch kein Upgrade buchen")) {
             log.info("no upgrade yet");
         } else {
-            orderVolume(redirectTo);
+            orderVolume();
         }
     }
 
-    private void orderVolume(String redirectTo) {
+    synchronized void orderVolume() {
         SMS.Actions.send("70997", "2");
         SMS.Actions.send(redirectTo, "extends data volume");
     }
