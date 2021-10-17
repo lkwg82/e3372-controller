@@ -4,8 +4,8 @@ set -e
 service="e3372-controller"
 systemd-analyze verify $service.service
 
-if [[ ! -e "/etc/e3372-controler.env" ]]; then
-  echo "REDIRECT_PHONE_NUMBER=1" >/etc/e3372-controler.env
+if [[ ! -e "/etc/e3372-controller.env" ]]; then
+  echo "REDIRECT_PHONE_NUMBER=1" >/etc/e3372-controller.env
 fi
 
 systemctl enable $service
