@@ -2,6 +2,7 @@ package de.lgohlke;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @RequiredArgsConstructor
 @Data
@@ -14,11 +15,13 @@ class BandwidthStatistics {
     }
 
     long bandwidth_kbits_per_second() {
-        return kbits() * 1000 / milliseconds;
+        val duration = milliseconds == 0 ? 1 : milliseconds;
+        return kbits() * 1000 / duration;
     }
 
     long bandwidth_kbytes_per_second() {
-        return bytes * 1000 / milliseconds / 1024;
+        val duration = milliseconds == 0 ? 1 : milliseconds;
+        return bytes * 1000 / duration / 1024;
     }
 
     @Override

@@ -3,6 +3,7 @@ package de.lgohlke;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -67,9 +68,10 @@ public class UploadCheckTask extends Task {
     private static BandwidthStatistics upload(byte[] bytes, Socket socket) {
         var startSend = System.currentTimeMillis();
         int count = 0;
-        try (var outputStream = socket.getOutputStream()) {
+        try (var outputStream = new BufferedOutputStream(socket.getOutputStream())) {
             for (byte aByte : bytes) {
                 outputStream.write(aByte);
+                outputStream.flush();
                 count++;
             }
         } catch (Exception e) {

@@ -12,7 +12,7 @@ public class Main {
         var executorService = Executors.newCachedThreadPool();
         var dataLimitExceededTask = new DataLimitExceededTask();
         executorService.submit(dataLimitExceededTask);
-        executorService.submit(new UploadCheckTask(dataLimitExceededTask));
+//        executorService.submit(new UploadCheckTask(dataLimitExceededTask));
         executorService.submit(new FetchStatistics(new TelegrafTransmitter()));
     }
 }
