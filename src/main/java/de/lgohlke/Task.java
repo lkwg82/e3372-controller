@@ -1,30 +1,14 @@
 package de.lgohlke;
 
-import java.util.concurrent.TimeUnit;
+import java.util.TimerTask;
 
-public abstract class Task implements Runnable {
+public abstract class Task extends TimerTask {
     @Override
     public final void run() {
-        try {
-            Thread.currentThread()
-                  .setName(getClass().getSimpleName());
-            while (true) {
-                doTask();
-                sleep_time();
-            }
-        } catch (Exception e) {
-            signalException(e);
-        }
-    }
-
-    protected void sleep_time() throws InterruptedException {
-        TimeUnit.SECONDS.sleep(3);
-    }
-
-    final void signalException(Exception e) {
-        e.printStackTrace();
+        Thread.currentThread()
+              .setName(getClass().getSimpleName());
+        doTask();
     }
 
     public abstract void doTask();
-
 }

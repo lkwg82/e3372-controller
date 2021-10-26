@@ -10,10 +10,11 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.http.HttpConnectTimeoutException;
 import java.util.Objects;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-class DataLimitExceededTask extends Task {
+class DataLimitExceededTask extends TimerTask {
     private final String redirectTo;
 
     DataLimitExceededTask() {
@@ -25,7 +26,9 @@ class DataLimitExceededTask extends Task {
 
     @SneakyThrows
     @Override
-    public void doTask() {
+    public void run() {
+        Thread.currentThread()
+              .setName(getClass().getSimpleName());
         try {
             SMS.Actions.list(SMS.BOXTYPE.INBOX)
                        .forEach(message -> {
@@ -68,11 +71,6 @@ class DataLimitExceededTask extends Task {
                 throw e;
             }
         }
-    }
-
-    @Override
-    protected void sleep_time() throws InterruptedException {
-        TimeUnit.SECONDS.sleep(3);
     }
 
     private void handleSMS(SMS.Response.List.Message message) {

@@ -12,16 +12,16 @@ docker run --rm -ti -v "$PWD:/out" -w /out --user "$(id -u)" \
   dpkg-deb --build /src e3372-controller.deb
 
 ## test images
-#docker build -t test_debian_10 -f Docker_debian_10 .
-#
-#function run_debian_10() {
-#  docker run --rm -ti -v "$PWD:/tmp" -w /tmp \
-#    test_debian_10 \
-#    "$@"
-#}
-#
-#run_debian_10 dpkg -i e3372-controller.deb
+docker build -t test_debian_10 -f Docker_debian_10 .
 
+function run_debian_10() {
+  docker run --rm -ti -v "$PWD:/tmp" -w /tmp \
+    test_debian_10 \
+    "$@"
+}
+
+#run_debian_10 dpkg -i e3372-controller.deb
+#
 dpkg -c e3372-controller*deb
 
 function check_file_in_deb() {
